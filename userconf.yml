@@ -1,2 +1,2 @@
 # User defined config, depends on where your files are etc.
-rdsf_dir: "~/zebrafish_rdsf/"
+rdsf_dir: "/home/mh19137/zebrafish_rdsf/"
