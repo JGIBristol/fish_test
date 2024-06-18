@@ -4,7 +4,6 @@ Crop arrays according to the centres in the mastersheet
 """
 
 import os
-import tqdm
 from multiprocessing import Pool
 
 import numpy as np
@@ -22,7 +21,6 @@ def _cropped_img(img_n: str, region: str) -> np.ndarray:
     cropped = np.empty((window_size, window_size, window_size))
 
     img_dir = image_io.img_dir(img_n)
-    print(img_dir)
 
     # Parse the coordinates
     z, x, y = image_io.parse_roi(region)
@@ -31,7 +29,7 @@ def _cropped_img(img_n: str, region: str) -> np.ndarray:
     start_i = z - window_size // 2
 
     # Read these images and copy the right pixels to the out array
-    for i in tqdm.tqdm(range(window_size)):
+    for i in range(window_size):
         img_path = f"{img_dir}/{img_n:03}_{start_i + i:04}.tiff"
         assert os.path.exists(img_path), img_path
 
@@ -45,24 +43,39 @@ def _cropped_img(img_n: str, region: str) -> np.ndarray:
     return cropped
 
 
+def out_dir() -> str:
+    return "cropped_arrs/"
+
+
+def _save(n: int, jaw_centre: str) -> None:
+    """
+    Save the cropped image as a numpy array
+    """
+    out_path = f"{out_dir()}/{n:03}.npy"
+    if not os.path.exists(out_path):
+        cropped = _cropped_img(n, jaw_centre)
+        np.save(out_path, cropped)
+    else:
+        print(f"Skipping {n}")
+
+
 def main():
     """
     For each stack of tifs, read the mastersheet to find the jaw centre, read the right images and crop them
-    Then save them as a DICOM
+    Then save them as numpy arrays
 
     """
     # Read the relevant columns in the mastersheet
-    mastersheet = metadata.mastersheet()[["old_n", "jaw_center"]].set_index("old_n")
+    mastersheet = metadata.mastersheet()[["old_n", "jaw_center"]]
 
     # Choose a directory for images to be saved
-    out_dir = "cropped_dicoms/"
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    if not os.path.exists(out_dir()):
+        os.mkdir(out_dir())
 
     # For each image, read and crop the central region, then save to DICOM
-    for img_n, jaw_center in mastersheet.itertuples():
-        img = _cropped_img(img_n, jaw_center)
-        np.save(f"{out_dir}{img_n:03}.npy", img)
+    tasks = list(mastersheet.itertuples(index=False, name=None))
+    with Pool(processes=12) as pool:
+        pool.starmap(_save, tasks)
 
 
 if __name__ == "__main__":

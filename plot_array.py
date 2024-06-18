@@ -15,6 +15,7 @@ def plot(n):
     fig.suptitle(f"{n:03}")
     fig.tight_layout()
     fig.savefig(f"imgs/{n:03}.png")
+    plt.close(fig)
 
 
 def main():
