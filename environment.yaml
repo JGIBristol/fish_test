@@ -1,0 +1,9 @@
+name: fish
+dependencies:
+  - python=3.12
+  - python-graphviz
+  - black
+  - pip
+  - pip:
+    - git+https://github.com/wahabk/ctfishpy
+    - torchviz
