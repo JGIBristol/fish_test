@@ -8,6 +8,10 @@ import yaml
 import pathlib
 from functools import cache
 
+import cv2
+import numpy as np
+import torch
+
 
 @cache
 def _user_config() -> dict:
@@ -52,3 +56,35 @@ def parse_roi(roi_str: str) -> tuple[int, int, int]:
 
     """
     return tuple(map(int, re.findall(r"\d+", roi_str)))
+
+
+def read_tiffstack(n: int) -> np.ndarray:
+    """
+    Read a stack of .tiff images from the right directory; assumed the zebrafish osteoarthritis RDSF is mounted at the provided dir
+
+    :param n: scan number; old_n in metadata
+
+    """
+    img_paths = sorted(img_dir(n).glob("*.tiff"))
+
+    # Read the first image to determine the shape
+    img0 = cv2.imread(str(img_paths[0]), cv2.IMREAD_GRAYSCALE)
+    shape = img0.shape
+    retval = np.empty((len(img_paths), *shape))
+    retval[0] = img0
+
+    for i, img_path in enumerate(img_paths[1:], start=1):
+        img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
+        retval[i] = img
+
+    return retval
+
+
+def img2pytorch(img: np.ndarray) -> torch.tensor:
+    """
+    Convert an image to a PyTorch tensor
+
+    Assumes the image has values between 0 and 255
+
+    """
+    return torch.tensor(img / 255.0, dtype=torch.float32).unsqueeze(0)
