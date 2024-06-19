@@ -36,8 +36,8 @@ def _cropped_img(img_n: str, region: str) -> np.ndarray:
         img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
         cropped[i] = img[
+            img.shape[1] - y - window_size // 2 : img.shape[1] - y + window_size // 2,
             x - window_size // 2 : x + window_size // 2,
-            y - window_size // 2 : y + window_size // 2,
         ]
 
     return cropped
@@ -51,10 +51,19 @@ def _save(n: int, jaw_centre: str) -> None:
     """
     Save the cropped image as a numpy array
     """
+    if not image_io.img_dir(n).is_dir():
+        print(f"Skipping {n} - does not exist")
+        return
+
     out_path = f"{out_dir()}/{n:03}.npy"
     if not os.path.exists(out_path):
-        cropped = _cropped_img(n, jaw_centre)
+        try:
+            cropped = _cropped_img(n, jaw_centre)
+        except Exception as e:
+            print(f"Error with {n}: {e}")
+            return
         np.save(out_path, cropped)
+
     else:
         print(f"Skipping {n}")
 
