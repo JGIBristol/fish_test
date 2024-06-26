@@ -32,7 +32,12 @@ def main():
     conf = util.config()
     img_dir = pathlib.Path(image_io.user_config()["rdsf_dir"]) / conf["wahab_data_dir"]
 
-    for dir in img_dir.glob(r"[0-9][0-9][0-9]"):
+    dirs = list(img_dir.glob(r"[0-9][0-9][0-9]"))
+
+    # Only choose a few dirs for now
+    gen = np.random.default_rng(seed=0)
+    dirs = gen.choice(dirs, size=5)
+    for dir in dirs:
         print(dir)
 
 
