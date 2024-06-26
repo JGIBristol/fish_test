@@ -17,7 +17,7 @@ import torch
 def user_config() -> dict:
     """
     Read the user configuration file
-    
+
     Should be in util/
 
     """
