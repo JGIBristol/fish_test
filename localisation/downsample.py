@@ -16,12 +16,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from dev import image_io, util
 
 
-def downsample(img_no: int) -> None:
+def downsample(img_dir: pathlib.Path) -> None:
     """
     Downsample an image and save it to disk
 
     """
-    #
+    # Extract the image number
+    # Read all the tifs into a numpy array
+    # Downsample this array
+    # Save it to disk
 
 
 def main():
