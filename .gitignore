@@ -3,6 +3,7 @@ uCT_mastersheet.csv
 arrays/
 *.png
 cropped_arrs/
+downsampled/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
