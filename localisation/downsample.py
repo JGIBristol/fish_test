@@ -31,7 +31,9 @@ def main():
     """
     conf = util.config()
     img_dir = pathlib.Path(image_io.user_config()["rdsf_dir"]) / conf["wahab_data_dir"]
-    print(img_dir)
+
+    for dir in img_dir.glob(r"[0-9][0-9][0-9]"):
+        print(dir)
 
 
 if __name__ == "__main__":
