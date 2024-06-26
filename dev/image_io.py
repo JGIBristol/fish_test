@@ -14,9 +14,11 @@ import torch
 
 
 @cache
-def _user_config() -> dict:
+def user_config() -> dict:
     """
     Read the user configuration file
+    
+    Should be in util/
 
     """
     with open("userconf.yml") as file:
@@ -30,7 +32,7 @@ def ct_scan_dir() -> pathlib.Path:
 
     """
     return (
-        pathlib.Path(_user_config()["rdsf_dir"])
+        pathlib.Path(user_config()["rdsf_dir"])
         / "DATABASE"
         / "uCT"
         / "Wahab_clean_dataset"
