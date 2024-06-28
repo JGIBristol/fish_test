@@ -60,11 +60,9 @@ def parse_roi(roi_str: str) -> tuple[int, int, int]:
     return tuple(map(int, re.findall(r"\d+", roi_str)))
 
 
-def read_tiffstack(n: int) -> np.ndarray:
+def _read_tiffstack_singlethread(n: int) -> np.ndarray:
     """
-    Read a stack of .tiff images from the right directory; assumed the zebrafish osteoarthritis RDSF is mounted at the provided dir
-
-    :param n: scan number; old_n in metadata
+    Single threaded version of read_tiffstack
 
     """
     img_paths = sorted(img_dir(n).glob("*.tiff"))
@@ -80,6 +78,19 @@ def read_tiffstack(n: int) -> np.ndarray:
         retval[i] = img
 
     return retval
+
+
+def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
+    """
+    Read a stack of .tiff images from the right directory; assumed the zebrafish osteoarthritis RDSF is mounted at the provided dir
+
+    :param n: scan number; old_n in metadata
+
+    """
+    if n_jobs is None:
+        return _read_tiffstack_singlethread(n)
+    else:
+        raise NotImplementedError
 
 
 def img2pytorch(img: np.ndarray) -> torch.tensor:
