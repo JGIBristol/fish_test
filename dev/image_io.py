@@ -7,6 +7,7 @@ import re
 import yaml
 import pathlib
 from functools import cache
+from concurrent.futures import ThreadPoolExecutor
 
 import cv2
 import numpy as np
@@ -98,7 +99,22 @@ def _read_tiffstack_multithread(
     Multiple threads
 
     """
-    return NotImplemented
+    retval = _init_tiffstack_arr(img_paths)
+
+    def _write_img2array(i: int, path: pathlib.Path, arr: np.ndarray) -> None:
+        """Write the image to path"""
+        arr[i] = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+
+    with ThreadPoolExecutor(max_workers=n_jobs) as executor:
+        futures = [
+            executor.submit(_write_img2array, i, path, retval)
+            for i, path in enumerate(img_paths[1:], start=1)
+        ]
+
+        for future in futures:
+            future.result()
+
+    return retval
 
 
 def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
