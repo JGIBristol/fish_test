@@ -2,3 +2,4 @@
 # User-defined configuration is in userconf.yml
 downsampled_img_dir: "downsampled/"
 wahab_data_dir: "DATABASE/uCT/Wahab_clean_dataset/low_res_clean_v3/"
+img_cache: "tifs/"
