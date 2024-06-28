@@ -60,24 +60,45 @@ def parse_roi(roi_str: str) -> tuple[int, int, int]:
     return tuple(map(int, re.findall(r"\d+", roi_str)))
 
 
-def _read_tiffstack_singlethread(n: int) -> np.ndarray:
+def _init_tiffstack_arr(img_paths: list[pathlib.Path]) -> np.ndarray:
+    """
+    Initialize the array to hold the stack of tiff images, and populate the first image
+
+    """
+    img0 = cv2.imread(str(img_paths[0]), cv2.IMREAD_GRAYSCALE)
+    shape = img0.shape
+
+    retval = np.empty((len(img_paths), *shape))
+    retval[0] = img0
+
+    return retval
+
+
+def _read_tiffstack_singlethread(img_paths: list[pathlib.Path]) -> np.ndarray:
     """
     Single threaded version of read_tiffstack
 
     """
-    img_paths = sorted(img_dir(n).glob("*.tiff"))
 
     # Read the first image to determine the shape
-    img0 = cv2.imread(str(img_paths[0]), cv2.IMREAD_GRAYSCALE)
-    shape = img0.shape
-    retval = np.empty((len(img_paths), *shape))
-    retval[0] = img0
+    retval = _init_tiffstack_arr(img_paths)
 
+    # The first image is already populated, so just do the rest in order
     for i, img_path in enumerate(img_paths[1:], start=1):
         img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
         retval[i] = img
 
     return retval
+
+
+def _read_tiffstack_multithread(
+    img_paths: list[pathlib.Path], n_jobs: int
+) -> np.ndarray:
+    """
+    Multiple threads
+
+    """
+    return NotImplemented
 
 
 def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
@@ -87,10 +108,12 @@ def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
     :param n: scan number; old_n in metadata
 
     """
+    img_paths = sorted(img_dir(n).glob("*.tiff"))
+
     if n_jobs is None:
-        return _read_tiffstack_singlethread(n)
+        return _read_tiffstack_singlethread(img_paths)
     else:
-        raise NotImplementedError
+        return _read_tiffstack_multithread(img_paths, n_jobs)
 
 
 def img2pytorch(img: np.ndarray) -> torch.tensor:
