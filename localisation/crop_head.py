@@ -11,6 +11,7 @@ from multiprocessing import Pool, Manager
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from dev import image_io, util, thresholding, plot as plot_lib
@@ -73,6 +74,38 @@ def _plot_profile(profile: np.ndarray, plot_dir: str) -> None:
     fig.savefig(f"{plot_dir}profile.png")
 
 
+def find_peaks(profile: np.ndarray) -> np.ndarray:
+    """
+    Find peaks in the profile
+
+    """
+    # Smooth a little
+    tophat_width = 10
+    smoothed = np.convolve(profile, np.ones(tophat_width) / tophat_width, mode="same")
+
+    peaks = find_peaks(smoothed, height=0.2, prominence=0.1, distance=50)[0]
+    return peaks
+
+
+def _plot_peaks(peaks: np.ndarray, profile: np.ndarray, plot_dir: str) -> None:
+    """
+    Plot the peaks on the profile
+
+    """
+    fig, axis = plt.subplots()
+
+    axis.plot(profile)
+    for peak in peaks:
+        axis.axvline(peak, color="red")
+    
+    fig.suptitle("Peaks in the profile")
+    axis.set_xlabel("Slice No")
+    axis.set_ylabel("Avg number of white pixels")
+
+    fig.tight_layout()
+    fig.savefig(f"{plot_dir}peaks.png")
+
+
 def main(*, img_n: int, n_jobs: int, plot: bool):
     """
     Read in the image, count how many white pixels there are for various thresholds and take the average
@@ -87,20 +120,21 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
         plot_dir = f"plots/{img_n}/"
         if not os.path.exists("plots"):
             os.mkdir("plots")
-        os.mkdir(plot_dir)
+        if not os.path.exists(plot_dir):
+            os.mkdir(plot_dir)
 
     # Read in the image
     img_arr = image_io.read_tiffstack(
         img_n, n_jobs=None
     )  # Don't use threads here because it doesn't help
     if plot:
-        fig, _ = plot_lib.plot_stack(img_arr)
+        fig, _ = plot_lib.plot_arr(img_arr)
         fig.savefig(f"{plot_dir}raw_stack.png")
 
     # Equalise the image, setting the number of pixels to be saturated
     img_arr = thresholding.equalise(img_arr, saturated_pct=0.35)
     if plot:
-        fig, _ = plot_lib.plot_stack(img_arr)
+        fig, _ = plot_lib.plot_arr(img_arr)
         fig.savefig(f"{plot_dir}eq_stack.png")
 
     # For various thresholds, count the number of white pixels
@@ -110,6 +144,10 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
         _plot_profile(profile, plot_dir)
 
     # Find peaks
+    peaks = find_peaks(profile)
+    if plot:
+        _plot_peaks(peaks, profile, plot_dir)
+
     # Define our allowed regions and find where peaks are allowed
     # Choose a peak and find the corresponding slice
     # Choose the x/y window
