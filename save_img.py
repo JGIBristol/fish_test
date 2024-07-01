@@ -18,9 +18,12 @@ def main(*, img_n: int, n_jobs: int):
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
 
-    arr = image_io.read_tiffstack(img_n, n_jobs=n_jobs)
-
-    np.save(f"{cache_dir}/{img_n}.npy", arr)
+    out_file = os.path.join(cache_dir, f"{img_n}.npy")
+    if not os.path.exists(out_file):
+        arr = image_io.read_tiffstack(img_n, n_jobs=n_jobs)
+        np.save(out_file, arr)
+    else:
+        print(f"File {out_file} already exists")
 
 
 if __name__ == "__main__":
