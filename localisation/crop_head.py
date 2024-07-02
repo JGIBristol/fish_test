@@ -271,7 +271,7 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
     n_z = 250
     for z in range(peak - n_z // 2, peak + n_z // 2):
         Image.fromarray(_crop(img_arr[z], crop_coords, window_size)).save(
-            f"{out_dir}/sub_window_{peak + z}.jpg"
+            f"{out_dir}/sub_window_{z}.jpg"
         )  # Filename corresponds to the slice number
 
 
