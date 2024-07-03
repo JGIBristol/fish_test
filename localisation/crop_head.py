@@ -18,7 +18,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from dev import image_io, thresholding, plot as plot_lib
 
 
-def n_white_per_slice(img_arr: np.ndarray, threshold_pct: float) -> np.ndarray:
+def n_white_per_slice(
+    img_arr: np.ndarray, threshold_pct: float, plot_dir: pathlib.Path
+) -> np.ndarray:
     """
     Find how many white pixels there are per slice with the given threshold
 
@@ -30,17 +32,28 @@ def n_white_per_slice(img_arr: np.ndarray, threshold_pct: float) -> np.ndarray:
     threshold = np.quantile(img_arr, 1 - (threshold_pct / 100))
 
     # Count the number of white pixels per slice
-    return np.sum(img_arr > threshold, axis=(1, 2))
+    thresholded = img_arr > threshold
+    if plot_dir is not None:
+        fig, _ = plot_lib.plot_arr(thresholded)
+        fig.savefig(f"{plot_dir}/thresholded.png")
+
+    return np.sum(thresholded, axis=(1, 2))
 
 
 def _n_white_per_slice(
-    img_arr: np.ndarray, threshold: float, shared_list: list
+    img_arr: np.ndarray,
+    threshold: float,
+    shared_list: list,
+    plot_dir: pathlib.Path = None,
 ) -> None:
-    shared_list.append(n_white_per_slice(img_arr, threshold))
+    shared_list.append(n_white_per_slice(img_arr, threshold, plot_dir))
 
 
 def avg_profile(
-    img_arr: np.ndarray, thresholds: list[float], n_jobs: int
+    img_arr: np.ndarray,
+    thresholds: list[float],
+    n_jobs: int,
+    plot_dir: pathlib.Path = None,
 ) -> np.ndarray:
     """
     For many thresholds, find the number of white pixels per slice
@@ -52,7 +65,7 @@ def avg_profile(
     with Pool(n_jobs) as pool:
         pool.starmap(
             _n_white_per_slice,
-            [(img_arr, threshold, shared_list) for threshold in thresholds],
+            [(img_arr, threshold, shared_list, plot_dir) for threshold in thresholds],
         )
 
     return np.mean(shared_list, axis=0)
@@ -218,6 +231,7 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
             plot_dir.mkdir(exist_ok=True)
 
     # Read in the image
+    print(f"Reading {img_n}")
     img_arr = image_io.read_tiffstack(
         img_n, n_jobs=None
     )  # Don't use threads here because it doesn't help
@@ -234,8 +248,10 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
         fig.savefig(f"{plot_dir}/eq_stack.png")
 
     # For various thresholds, count the number of white pixels
-    thresholds = [0.50, 0.65, 0.80, 0.95, 1.1, 1.25, 1.4]
-    profile = avg_profile(img_arr, thresholds, n_jobs)
+    thresholds = [0.50]
+    profile = avg_profile(
+        img_arr, thresholds, n_jobs, plot_dir=plot_dir if plot else ""
+    )
     if plot:
         print("Plotting profile")
         _plot_profile(profile, plot_dir)

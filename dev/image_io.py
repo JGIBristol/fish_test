@@ -22,7 +22,7 @@ def user_config() -> dict:
     Should be in util/
 
     """
-    with open("userconf.yml") as file:
+    with open(str(pathlib.Path(__file__).parents[1] / "userconf.yml")) as file:
         return yaml.safe_load(file)
 
 
