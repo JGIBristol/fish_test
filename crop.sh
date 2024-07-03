@@ -19,3 +19,6 @@ do
 		wait -n
 	fi
 done
+
+# Wait for all jobs to finish
+wait
