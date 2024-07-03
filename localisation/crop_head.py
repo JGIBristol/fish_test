@@ -8,7 +8,6 @@ import sys
 import pathlib
 import argparse
 from PIL import Image
-from multiprocessing import Pool, Manager
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,37 +37,6 @@ def n_white_per_slice(
         fig.savefig(f"{plot_dir}/thresholded.png")
 
     return np.sum(thresholded, axis=(1, 2))
-
-
-def _n_white_per_slice(
-    img_arr: np.ndarray,
-    threshold: float,
-    shared_list: list,
-    plot_dir: pathlib.Path = None,
-) -> None:
-    shared_list.append(n_white_per_slice(img_arr, threshold, plot_dir))
-
-
-def avg_profile(
-    img_arr: np.ndarray,
-    thresholds: list[float],
-    n_jobs: int,
-    plot_dir: pathlib.Path = None,
-) -> np.ndarray:
-    """
-    For many thresholds, find the number of white pixels per slice
-    and take the average of them
-
-    """
-    shared_list = Manager().list()
-
-    with Pool(n_jobs) as pool:
-        pool.starmap(
-            _n_white_per_slice,
-            [(img_arr, threshold, shared_list, plot_dir) for threshold in thresholds],
-        )
-
-    return np.mean(shared_list, axis=0)
 
 
 def _plot_profile(profile: np.ndarray, plot_dir: pathlib.Path) -> None:
@@ -197,7 +165,10 @@ def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, 
 def find_window(
     img: np.ndarray, window_size: tuple[int, int]
 ) -> tuple[np.ndarray, tuple[int, int]]:
-    """ """
+    """
+    Find the window in the (binary, 2d) image with the most white pixels
+
+    """
     kernel = np.ones(window_size)
 
     # Count the number of 1s in each sub-window
@@ -213,7 +184,7 @@ def find_window(
     return sub_window, max_index
 
 
-def main(*, img_n: int, n_jobs: int, plot: bool):
+def main(*, img_n: int, plot: bool):
     """
     Read in the image, count how many white pixels there are for various thresholds and take the average
 
@@ -248,10 +219,8 @@ def main(*, img_n: int, n_jobs: int, plot: bool):
         fig.savefig(f"{plot_dir}/eq_stack.png")
 
     # For various thresholds, count the number of white pixels
-    thresholds = [0.50]
-    profile = avg_profile(
-        img_arr, thresholds, n_jobs, plot_dir=plot_dir if plot else ""
-    )
+    threshold = 0.50
+    profile = n_white_per_slice(img_arr, threshold, plot_dir=plot_dir if plot else "")
     if plot:
         print("Plotting profile")
         _plot_profile(profile, plot_dir)
@@ -298,13 +267,6 @@ if __name__ == "__main__":
         "img_n",
         type=int,
         help="The image number to crop the head from",
-    )
-    parser.add_argument(
-        "--n_jobs",
-        "-n",
-        type=int,
-        default=6,
-        help="Number of threads to use for thresholding.",
     )
     parser.add_argument(
         "--plot",
