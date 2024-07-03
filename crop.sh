@@ -2,10 +2,10 @@
 
 set -e
 
-# Some wildtypes
 max_jobs=6
 
 # All the ones I looked at initially
+# All wildtype
 fish_ids=(40 42 47 53 61 70 89 95 99 201 205 218 224 230 240 243 247 363 372 373 384 389 441 490 545 575)
 
 # The ones I'm using to fine-tune the model

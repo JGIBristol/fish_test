@@ -5,6 +5,7 @@ Crop out the fish head by looking at the greyscale intensity of the image and ma
 
 import os
 import sys
+import time
 import pathlib
 import argparse
 from PIL import Image
@@ -212,6 +213,7 @@ def main(*, img_n: int, plot: bool):
         fig.savefig(f"{plot_dir}/raw_stack.png")
 
     # Equalise the image, setting the number of pixels to be saturated
+    start_t = time.perf_counter()
     img_arr = thresholding.equalise(img_arr, saturated_pct=0.35)
     if plot:
         print("Plotting images")
@@ -258,6 +260,10 @@ def main(*, img_n: int, plot: bool):
         Image.fromarray(_crop(img_arr[z], crop_coords, window_size)).save(
             f"{out_dir}/sub_window_{z}.jpg"
         )  # Filename corresponds to the slice number
+
+    print(
+        f"Total after reading{' (including plotting) ' if plot else ''}: {time.perf_counter() - start_t:.2f}s"
+    )
 
 
 if __name__ == "__main__":
