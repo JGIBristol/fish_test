@@ -39,12 +39,14 @@ def gradient_peaks(
     *,
     window_size: int = 25,
     smooth_params: dict = None,
+    return_smooth: bool = False,
+    return_grad: bool = False,
     return_diff: bool = False,
-    return_smooth: bool = False
 ) -> Union[
     tuple[np.ndarray],
     tuple[np.ndarray, np.ndarray],
     tuple[np.ndarray, np.ndarray, np.ndarray],
+    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray],
 ]:
     """
     From a 1d array showing how many white pixels there are per slice in a CT scan,
@@ -56,8 +58,9 @@ def gradient_peaks(
     :param n_white_profile: The number of white pixels per slice
     :param window_size: The size of the window to use for the gradient calculation
     :param smooth_params: additional parameters for the smoothing function
-    :param return_diff: return the diff array as well as the peaks
+    :param return_grad: return the gradients as well as the peaks
     :param return_smooth: return the smoothed array as well as the peaks
+    :param return_diff: return the diff array as well as the peaks
 
     :returns: peaks in the derivative of the gradient. These cannot be within the first
     or last sub-section of the array
@@ -94,10 +97,12 @@ def gradient_peaks(
 
     # Build the return value
     retval = [peaks]
-    if return_diff:
-        retval.append(diff)
     if return_smooth:
         retval.append(smoothed)
+    if return_grad:
+        retval.append(slopes)
+    if return_diff:
+        retval.append(diff)
     return tuple(retval)
 
 

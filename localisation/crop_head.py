@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks as sp_find_peaks, convolve
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from dev import image_io, thresholding, plot as plot_lib
+from dev import image_io, thresholding, plot as plot_lib, localisation
 
 
 def n_white_per_slice(
@@ -71,21 +71,33 @@ def find_peaks(profile: np.ndarray) -> np.ndarray:
 
 
 def _plot_peaks(
-    peaks: np.ndarray, profile: np.ndarray, plot_dir: pathlib.Path, filename: str
+    peaks: np.ndarray,
+    profile: np.ndarray,
+    plot_dir: pathlib.Path,
+    filename: str,
+    grad: np.ndarray,
+    diff: np.ndarray,
 ) -> None:
     """
     Plot the peaks on the profile
 
     """
-    fig, axis = plt.subplots()
+    fig, axes = plt.subplots(3, 1)
 
-    axis.plot(profile)
-    for peak in peaks:
-        axis.axvline(peak, color="red")
+    axes[0].plot(profile / np.max(profile))
+    axes[1].plot(grad / np.max(grad), "r")
+    axes[2].plot(diff / np.max(diff), "k")
+
+    axes[0].set_ylabel("N white pxl")
+    axes[1].set_ylabel("Gradient")
+    axes[2].set_ylabel("Diff")
+
+    for axis in axes:
+        for peak in peaks:
+            axis.axvline(peak, color="red")
+        axis.set_xlabel("Slice No")
 
     fig.suptitle("Peaks in the profile")
-    axis.set_xlabel("Slice No")
-    axis.set_ylabel("Avg number of white pixels")
 
     fig.tight_layout()
     fig.savefig(f"{plot_dir}/{filename}.png")
@@ -228,24 +240,21 @@ def main(*, img_n: int, plot: bool):
         _plot_profile(profile, plot_dir)
 
     # Find peaks
-    peaks = find_peaks(profile)
+    peaks, smoothed, grad, diff= localisation.gradient_peaks(profile,return_smooth=True, return_grad=True, return_diff=True)
     if plot:
         print("Plotting all peaks")
-        _plot_peaks(peaks, profile, plot_dir, "peaks")
-
-    # Define our allowed regions and find where peaks are allowed
-    allowed = _allowed_regions(profile, plot_dir=plot_dir if plot else "")
+        _plot_peaks(peaks, smoothed, plot_dir, "peaks", grad, diff)
 
     # Choose a peak and find the corresponding slice
-    allowed_peaks = [peak for peak in peaks if allowed[peak]]
+    jaw_peak = localisation.jaw_peak(peaks)
+    print(jaw_peak)
     if plot:
-        print("Plotting allowed peaks")
-        _plot_peaks(allowed_peaks, profile, plot_dir, "allowed_peaks")
-    peak = allowed_peaks[-1]
+        print("Plotting jaw peak")
+        _plot_peaks([jaw_peak], profile, plot_dir, "jaw_peak", grad, diff)
 
     # Choose the x/y window
     window_size = (250, 250)
-    sub_window, crop_coords = find_window(img_arr[peak], window_size)
+    sub_window, crop_coords = find_window(img_arr[jaw_peak], window_size)
     if plot:
         fig, axis = plt.subplots()
         axis.imshow(sub_window, cmap="gray")
@@ -256,7 +265,7 @@ def main(*, img_n: int, plot: bool):
 
     # Save the sub-window as images
     n_z = 250
-    for z in range(peak - n_z // 2, peak + n_z // 2):
+    for z in range(jaw_peak - n_z // 2, jaw_peak + n_z // 2):
         Image.fromarray(_crop(img_arr[z], crop_coords, window_size)).save(
             f"{out_dir}/sub_window_{z}.jpg"
         )  # Filename corresponds to the slice number
