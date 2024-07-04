@@ -84,7 +84,6 @@ def gradient_peaks(
 
     # Normalise only using those from the central region
     reject_size = 250
-    print(np.max(diff[reject_size:-reject_size]))
     diff = diff / np.max(diff[reject_size:-reject_size])
 
     # Find peaks in the diff
@@ -100,3 +99,24 @@ def gradient_peaks(
     if return_smooth:
         retval.append(smoothed)
     return tuple(retval)
+
+
+def jaw_peak(peaks, *, n_req: int = 3, width: int = 200) -> int:
+    """
+    From a list of peaks, find the one that is most likely to be the jaw
+
+    :param peaks: The peaks in the gradient of the number of white pixels per slice
+    :param n_req: number of peaks required within the width
+    :param width: the width within which we require the peaks
+
+    :returns: the peak that is most likely to be the jaw
+    :raises ValueError: if no accepted peaks are found
+
+    """
+    for peak in peaks[::-1]:
+        # Count the number within width
+        n = len([p for p in peaks if (peak - p < width) and (peak != p)])
+        if n >= n_req:
+            return peak
+
+    raise ValueError("No accepted peaks found")
