@@ -223,6 +223,7 @@ def main(*, img_n: int, plot: bool):
         print("Plotting images")
         fig, _ = plot_lib.plot_arr(img_arr)
         fig.savefig(f"{plot_dir}/eq_stack.png")
+        plt.close(fig)
 
     # For various thresholds, count the number of white pixels
     threshold = 0.50
