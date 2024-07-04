@@ -12,7 +12,7 @@ from PIL import Image
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import find_peaks as sp_find_peaks, convolve
+from scipy.signal import convolve
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from dev import image_io, thresholding, plot as plot_lib, localisation
@@ -57,7 +57,6 @@ def _plot_profile(profile: np.ndarray, plot_dir: pathlib.Path) -> None:
     fig.savefig(f"{plot_dir}/profile.png")
 
 
-
 def _plot_peaks(
     peaks: np.ndarray,
     profile: np.ndarray,
@@ -91,67 +90,6 @@ def _plot_peaks(
     fig.savefig(f"{plot_dir}/{filename}.png")
 
 
-def _smoothed(profile: np.ndarray) -> np.ndarray:
-    n = 500
-    tophat = np.ones(n) / n
-    return np.convolve(profile, tophat, mode="same")
-
-
-def _decreasing(profile: np.ndarray, *, plot_dir: pathlib.Path) -> np.ndarray:
-    """
-    Smooth and find where the profile is decreasing
-    Plots if plot_dir is provided
-
-    """
-    smoothed = _smoothed(profile)
-
-    if plot_dir:
-        fig, axis = plt.subplots()
-        axis.plot(smoothed)
-
-        fig.suptitle("Smoothed profile")
-        axis.set_xlabel("Slice No")
-        axis.set_ylabel("Avg number of white pixels")
-
-        fig.tight_layout()
-        fig.savefig(f"{plot_dir}/smoothed.png")
-
-    return np.concatenate([[False], np.diff(smoothed) < 0])
-
-
-def _allowed_regions(profile: np.ndarray, *, plot_dir: pathlib.Path) -> np.ndarray:
-    """
-    Define the allowed regions for peaks in the profile
-
-    Plots if plot_dir is provided
-
-    """
-    # Smooth the profile amd allow only points where the gradient is decreasing
-    allowed = _decreasing(profile, plot_dir=plot_dir)
-
-    # and the profile is not too small
-    allowed[profile < np.max(profile) / 10] = False
-
-    # and the peak is not near the edges
-    allowed[:250] = False
-    allowed[-250:] = False
-
-    # Plot the allowed regions
-    if plot_dir:
-        fig, axis = plt.subplots()
-        axis.plot(profile)
-        axis.plot(_smoothed(profile), "k", alpha=0.2)
-        axis.plot(np.arange(len(profile))[allowed], profile[allowed], "k.")
-
-        fig.suptitle("Allowed Regions for peaks")
-        axis.set_xlabel("Slice No")
-        axis.set_ylabel("Avg number of white pixels")
-
-        fig.savefig(f"{plot_dir}/allowed.png")
-
-    return allowed
-
-
 def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, int]):
     """
     Crop an image
@@ -160,8 +98,12 @@ def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, 
     half_width = window_size[0] // 2
     half_height = window_size[1] // 2
     return img_2d[
-        max(int(co_ords[1] - half_height), 0) : min(int(co_ords[1] + half_height), img_2d.shape[1]),
-        max(int(co_ords[0] - half_width), 0) : min(int(co_ords[0] + half_width), img_2d.shape[0]),
+        max(int(co_ords[1] - half_height), 0) : min(
+            int(co_ords[1] + half_height), img_2d.shape[1]
+        ),
+        max(int(co_ords[0] - half_width), 0) : min(
+            int(co_ords[0] + half_width), img_2d.shape[0]
+        ),
     ]
 
 
@@ -175,7 +117,7 @@ def find_window(
     kernel = np.ones(window_size)
 
     # Count the number of 1s in each sub-window
-    conv_result = convolve(img, kernel, mode="valid")
+    conv_result = convolve(img, kernel, mode="same")
 
     # Find all indices where the convolution result matches the maximum value
     max_value = np.max(conv_result)
@@ -233,14 +175,15 @@ def main(*, img_n: int, plot: bool):
         _plot_profile(profile, plot_dir)
 
     # Find peaks
-    peaks, smoothed, grad, diff= localisation.gradient_peaks(profile,return_smooth=True, return_grad=True, return_diff=True)
+    peaks, smoothed, grad, diff = localisation.gradient_peaks(
+        profile, return_smooth=True, return_grad=True, return_diff=True
+    )
     if plot:
         print("Plotting all peaks")
         _plot_peaks(peaks, smoothed, plot_dir, "peaks", grad, diff)
 
     # Choose a peak and find the corresponding slice
     jaw_peak = localisation.jaw_peak(peaks)
-    print(jaw_peak)
     if plot:
         print("Plotting jaw peak")
         _plot_peaks([jaw_peak], profile, plot_dir, "jaw_peak", grad, diff)
@@ -257,12 +200,10 @@ def main(*, img_n: int, plot: bool):
         fig.axis = plt.subplots()
         axis.imshow(img_arr[jaw_peak], cmap="gray")
 
-        pad_width = (window_size[0] // 2, window_size[1] // 2)
-        padded = np.pad(conv, (pad_width, pad_width), mode="constant", constant_values=0)
-        mappable = axis.imshow(padded, cmap="RdBu", alpha=0.3)
+        mappable = axis.imshow(conv, cmap="RdBu", alpha=0.3)
 
         # Plot the max
-        axis.plot(pad_width[1] + crop_coords[1], pad_width[0] + crop_coords[0], "ro", markersize=10)
+        axis.plot(crop_coords[1], crop_coords[0], "ro", markersize=10)
 
         fig.colorbar(mappable)
         fig.savefig(f"{plot_dir}/convolution.png")
