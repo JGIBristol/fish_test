@@ -157,9 +157,11 @@ def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, 
     Crop an image
 
     """
+    half_width = window_size[0] // 2
+    half_height = window_size[1] // 2
     return img_2d[
-        co_ords[0] : min(co_ords[0] + window_size[0], img_2d.shape[0]),
-        co_ords[1] : min(co_ords[1] + window_size[1], img_2d.shape[1]),
+        max(int(co_ords[1] - half_height), 0) : min(int(co_ords[1] + half_height), img_2d.shape[1]),
+        max(int(co_ords[0] - half_width), 0) : min(int(co_ords[0] + half_width), img_2d.shape[0]),
     ]
 
 
