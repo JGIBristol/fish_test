@@ -57,18 +57,6 @@ def _plot_profile(profile: np.ndarray, plot_dir: pathlib.Path) -> None:
     fig.savefig(f"{plot_dir}/profile.png")
 
 
-def find_peaks(profile: np.ndarray) -> np.ndarray:
-    """
-    Find peaks in the profile
-
-    """
-    # Smooth a little
-    tophat_width = 10
-    smoothed = np.convolve(profile, np.ones(tophat_width) / tophat_width, mode="same")
-
-    peaks = sp_find_peaks(smoothed, height=0.2, prominence=0.1, distance=50)[0]
-    return peaks
-
 
 def _plot_peaks(
     peaks: np.ndarray,
