@@ -177,14 +177,16 @@ def find_window(
     # Count the number of 1s in each sub-window
     conv_result = convolve(img, kernel, mode="valid")
 
-    # Find the index of the maximum value in the convolution result
-    max_index = np.unravel_index(np.argmax(conv_result), conv_result.shape)
+    # Find all indices where the convolution result matches the maximum value
+    max_value = np.max(conv_result)
+    max_indices = np.argwhere(conv_result == max_value)
 
-    # Extract the sub-window using the index
-    # Note: The end index is start index + size of the sub-window in each dimension
+    # Find the average of these - to hopefully get the middle of the jaw
+    max_index = np.mean(max_indices, axis=0).astype(int)
+
     sub_window = _crop(img, max_index, window_size)
 
-    return sub_window, max_index
+    return sub_window, max_index, conv_result
 
 
 def main(*, img_n: int, plot: bool):
@@ -244,11 +246,26 @@ def main(*, img_n: int, plot: bool):
 
     # Choose the x/y window
     window_size = (250, 250)
-    sub_window, crop_coords = find_window(img_arr[jaw_peak], window_size)
+    sub_window, crop_coords, conv = find_window(img_arr[jaw_peak], window_size)
     if plot:
         fig, axis = plt.subplots()
-        axis.imshow(sub_window, cmap="gray")
+        axis.imshow(sub_window, cmap="grey")
         fig.savefig(f"{plot_dir}/sub_window.png")
+        plt.close(fig)
+
+        fig.axis = plt.subplots()
+        axis.imshow(img_arr[jaw_peak], cmap="gray")
+
+        pad_width = (window_size[0] // 2, window_size[1] // 2)
+        padded = np.pad(conv, (pad_width, pad_width), mode="constant", constant_values=0)
+        mappable = axis.imshow(padded, cmap="RdBu", alpha=0.3)
+
+        # Plot the max
+        axis.plot(pad_width[1] + crop_coords[1], pad_width[0] + crop_coords[0], "ro", markersize=10)
+
+        fig.colorbar(mappable)
+        fig.savefig(f"{plot_dir}/convolution.png")
+        plt.close(fig)
 
     # Convert to uint8
     img_arr = (img_arr * 255).astype(np.uint8)
