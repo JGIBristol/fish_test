@@ -220,8 +220,7 @@ def main(*, img_n: int, plot: bool):
     img_arr = (img_arr * 255).astype(np.uint8)
 
     # Save the sub-window as images
-    n_z = 250
-    for z in range(jaw_peak - n_z // 2, jaw_peak + n_z // 2):
+    for z in range(jaw_peak - 300, jaw_peak + 100):
         Image.fromarray(_crop(img_arr[z], crop_coords, window_size)).save(
             f"{out_dir}/sub_window_{z}.jpg"
         )  # Filename corresponds to the slice number
