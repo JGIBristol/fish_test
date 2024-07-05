@@ -207,8 +207,13 @@ def main(*, img_n: int, plot: bool):
         axis.plot(crop_coords[1], crop_coords[0], "ro", markersize=10)
         fig.savefig(f"{plot_dir}/convolution.png")
 
+        print(f"{img_arr.shape=}")
+        print(f"{conv.shape=}")
+        fig.axis = plt.subplots()
+        axis.imshow(img_arr[jaw_peak], cmap="gray", alpha=0.6)
+        mappable = axis.imshow(conv, cmap="Wistia", alpha=0.5)
         fig.colorbar(mappable)
-        fig.savefig(f"{plot_dir}/convolution.png")
+        fig.savefig(f"{plot_dir}/heatmap.png")
         plt.close(fig)
 
     # Convert to uint8
