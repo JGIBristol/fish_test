@@ -108,16 +108,16 @@ def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, 
 
 
 def find_window(
-    img: np.ndarray, window_size: tuple[int, int]
+    img: np.ndarray, window_size: tuple[int, int], threshold: int
 ) -> tuple[np.ndarray, tuple[int, int]]:
     """
-    Find the window in the (binary, 2d) image with the most white pixels
+    Find the window in the (2d) image with the most white pixels when it is thresholded
 
     """
     kernel = np.ones(window_size)
 
     # Count the number of 1s in each sub-window
-    conv_result = convolve(img, kernel, mode="same")
+    conv_result = convolve(img > threshold, kernel, mode="same")
 
     # Find all indices where the convolution result matches the maximum value
     max_value = np.max(conv_result)
