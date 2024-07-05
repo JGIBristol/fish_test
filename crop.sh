@@ -10,7 +10,7 @@ fish_ids=(40 42 47 53 61 70 89 95 99 201 205 218 224 230 240 243 247 363 372 373
 
 # The ones I'm using to fine-tune the model
 test_fish=(40 95 218 247 372 389 53 230 545)
-for i in "${test_fish[@]}";
+for i in "${fish_ids[@]}";
 do
 	# If any files called cropped/i/sub_window* exist, skip
 	if compgen -G "cropped/$i/sub_window*" > /dev/null; then
