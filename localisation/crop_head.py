@@ -190,20 +190,22 @@ def main(*, img_n: int, plot: bool):
 
     # Choose the x/y window
     window_size = (250, 250)
-    sub_window, crop_coords, conv = find_window(img_arr[jaw_peak], window_size)
+    sub_window, crop_coords, conv = find_window(
+        img_arr[jaw_peak], window_size, threshold
+    )
+    print(f"{crop_coords=}")
     if plot:
+        # Plot the sub window
         fig, axis = plt.subplots()
         axis.imshow(sub_window, cmap="grey")
         fig.savefig(f"{plot_dir}/sub_window.png")
         plt.close(fig)
 
-        fig.axis = plt.subplots()
-        axis.imshow(img_arr[jaw_peak], cmap="gray")
-
-        mappable = axis.imshow(conv, cmap="RdBu", alpha=0.3)
-
-        # Plot the max
+        # Plot the convolution
+        fig, axis = plt.subplots()
+        axis.imshow(conv, cmap="gist_grey")
         axis.plot(crop_coords[1], crop_coords[0], "ro", markersize=10)
+        fig.savefig(f"{plot_dir}/convolution.png")
 
         fig.colorbar(mappable)
         fig.savefig(f"{plot_dir}/convolution.png")
