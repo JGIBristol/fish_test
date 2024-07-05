@@ -119,12 +119,17 @@ def find_window(
     # Count the number of 1s in each sub-window
     conv_result = convolve(img > threshold, kernel, mode="same")
 
-    # Find all indices where the convolution result matches the maximum value
-    max_value = np.max(conv_result)
-    max_indices = np.argwhere(conv_result == max_value)
+    # Take only the largest of these values
+    conv_result = conv_result > np.quantile(conv_result, 0.85)
+
+    # Find all indices where the convolution result is high
+    max_indices = np.argwhere(conv_result)
 
     # Find the average of these - to hopefully get the middle of the jaw
     max_index = np.mean(max_indices, axis=0).astype(int)
+
+    # Add the window half-size
+    # max_index = (max_index + np.array(window_size) // 2).astype(int)
 
     sub_window = _crop(img, max_index, window_size)
 
