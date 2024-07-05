@@ -99,10 +99,10 @@ def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, 
     half_height = window_size[1] // 2
     return img_2d[
         max(int(co_ords[1] - half_height), 0) : min(
-            int(co_ords[1] + half_height), img_2d.shape[1]
+            int(co_ords[1] + half_height), img_2d.shape[0]
         ),
         max(int(co_ords[0] - half_width), 0) : min(
-            int(co_ords[0] + half_width), img_2d.shape[0]
+            int(co_ords[0] + half_width), img_2d.shape[1]
         ),
     ]
 
