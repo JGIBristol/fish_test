@@ -92,7 +92,9 @@ def _plot_peaks(
 
 def _crop(img_2d: np.ndarray, co_ords: tuple[int, int], window_size: tuple[int, int]):
     """
-    Crop an image
+    Crop an image, centred around co_ords
+
+    TODO zero pad if we end up outside of the image
 
     """
     half_width = window_size[0] // 2
@@ -126,14 +128,11 @@ def find_window(
     max_indices = np.argwhere(conv_result)
 
     # Find the average of these - to hopefully get the middle of the jaw
-    max_index = np.mean(max_indices, axis=0).astype(int)
+    jaw_index = np.mean(max_indices, axis=0).astype(int)[::-1]
 
-    # Add the window half-size
-    # max_index = (max_index + np.array(window_size) // 2).astype(int)
+    sub_window = _crop(img, jaw_index, window_size)
 
-    sub_window = _crop(img, max_index, window_size)
-
-    return sub_window, max_index, conv_result
+    return sub_window, jaw_index, conv_result
 
 
 def main(*, img_n: int, plot: bool):
@@ -193,6 +192,14 @@ def main(*, img_n: int, plot: bool):
         print("Plotting jaw peak")
         _plot_peaks([jaw_peak], profile, plot_dir, "jaw_peak", grad, diff)
 
+        print("Plotting jaw slice")
+        fig, axis = plt.subplots()
+        axis.imshow(img_arr[jaw_peak], cmap="gray")
+        axis.set_axis_off()
+        fig.tight_layout()
+        fig.savefig(f"{plot_dir}/jaw_slice.png")
+        plt.close(fig)
+
     # Choose the x/y window
     window_size = (250, 250)
     sub_window, crop_coords, conv = find_window(
@@ -209,7 +216,7 @@ def main(*, img_n: int, plot: bool):
         # Plot the convolution
         fig, axis = plt.subplots()
         axis.imshow(conv, cmap="gist_grey")
-        axis.plot(crop_coords[1], crop_coords[0], "ro", markersize=10)
+        axis.plot(*crop_coords, "ro", markersize=10)
         fig.savefig(f"{plot_dir}/convolution.png")
 
         print(f"{img_arr.shape=}")
