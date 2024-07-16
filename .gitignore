@@ -4,6 +4,7 @@ arrays/
 *.png
 cropped_arrs/
 downsampled/
+test_webpage/static/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
