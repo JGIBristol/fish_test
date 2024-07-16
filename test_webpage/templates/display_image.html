@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Display Images</title>
+	<style>
+		.image-grid {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 10px;
+		}
+		.image-grid img {
+			width: 100%;
+			height: auto;
+		}
+	</style>
+</head>
+<body>
+	<h1>Rotated Images</h1>
+	<div class="image-grid">
+		{% for filename in filenames %}
+			<img src="{{ url_for('static', filename='uploads/' ~ filename) }}" alt="Rotated Image">
+		{% endfor %}
+	</div>
+</body>
+</html>
