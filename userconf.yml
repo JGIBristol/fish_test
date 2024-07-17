@@ -12,3 +12,7 @@ model_params:
   kernel_size: 7
   stride: 2
   dropout: 0.015
+
+# Other model parameters that aren't needed by the constructor
+learning_rate: 0.0026
+optimiser: "Adam"  # Must be one of the torch.optim optimisers
