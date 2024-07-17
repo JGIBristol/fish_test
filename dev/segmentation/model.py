@@ -5,6 +5,7 @@ Model for performing segmentation
 
 import torch
 import numpy as np
+import torch.utils
 from tqdm import tqdm
 from tqdm.notebook import tqdm as tqdm_nb
 from torchviz import make_dot
@@ -58,6 +59,15 @@ def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
     )
 
 
+def _pbar(data: torch.utils.DataLoader, notebook: bool) -> type:
+    """
+    Get batches wrapped in the right progress bar type based on whether we're in a notebook or not
+
+    """
+    progress_bar = tqdm_nb if notebook else tqdm
+    return progress_bar(enumerate(data), "Training", total=len(data), leave=False)
+
+
 def train_step(
     model: AttentionUnet,
     optimiser: torch.optim.Optimizer,
@@ -83,13 +93,9 @@ def train_step(
     """
     model.train()
 
-    # Wrap the batches in a progress bar
-    progress_bar = tqdm_nb if notebook else tqdm
-    batches = progress_bar(
-        enumerate(train_data), "Training", total=len(train_data), leave=False
-    )
+    batches = _pbar(train_data, notebook)
 
-    train_losses = np.ones(len(train_data)) * np.nan
+    train_losses = np.ones(len(batches)) * np.nan
     for i, batch in batches:
         x, y = batch
         input_, target = x.to(device), y.to(device)
@@ -104,5 +110,40 @@ def train_step(
         optimiser.step()
 
         batches.set_description(f"Training (loss: {loss.item():.4f})")
+    batches.close()
 
     return model, np.mean(train_losses)
+
+
+def validation_step(
+    model: AttentionUnet,
+    optimiser: torch.optim.Optimizer,
+    loss_fn: torch.nn.Module,
+    validation_data: torch.utils.data.DataLoader,
+    *,
+    device: torch.device,
+    notebook: bool = False,
+) -> tuple[AttentionUnet, float]:
+    """
+    Run the model on one epoch of validation data to check the loss
+
+    """
+    model.eval()
+
+    batches = _pbar(validation_data, notebook)
+
+    losses = np.ones(len(validation_data)) * np.nan
+
+    for i, batch in enumerate(batches):
+        x, y = batch
+        input_, target = x.to(device), y.to(device)
+
+        with torch.no_grad():
+            out = model(input_)
+            loss = loss_fn(out, target)
+            losses[i] = loss.item()
+
+        batch.set_description(f"Validation (loss: {loss.item():.4f})")
+    batches.close()
+
+    return model, np.mean(losses"""  """)
