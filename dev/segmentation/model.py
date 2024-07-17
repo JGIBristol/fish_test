@@ -35,6 +35,6 @@ def draw_model(model: AttentionUnet, path: str) -> None:
         1, params["in_channels"], *[128 for _ in range(params["spatial_dims"])]
     )
 
-    dot = make_dot(model(dummy_input), params=dict(model.named_parameters())).render(
+    make_dot(model(dummy_input), params=dict(model.named_parameters())).render(
         path, format=fmt
     )
