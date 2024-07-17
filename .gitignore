@@ -5,6 +5,8 @@ arrays/
 cropped_arrs/
 downsampled/
 test_webpage/static/
+cropped/
+tifs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
