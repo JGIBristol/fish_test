@@ -6,6 +6,7 @@ Read, crop, save, etc. images
 import re
 import yaml
 import pathlib
+import warnings
 from functools import cache
 from concurrent.futures import ThreadPoolExecutor
 
@@ -13,17 +14,19 @@ import cv2
 import numpy as np
 import torch
 
+from . import util
+
 
 @cache
 def user_config() -> dict:
     """
     Read the user configuration file
 
-    Should be in util/
-
     """
-    with open(str(pathlib.Path(__file__).parents[1] / "userconf.yml")) as file:
-        return yaml.safe_load(file)
+    warnings.warn(
+        "This function is deprecated. Use util.user_config instead.", DeprecationWarning
+    )
+    return util.userconf()
 
 
 @cache
