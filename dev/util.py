@@ -2,13 +2,12 @@
 Misc utilities
 
 """
+
 import pathlib
 
 import yaml
-from functools import cache
 
 
-@cache
 def config() -> dict:
     """
     Read the config file
@@ -18,7 +17,6 @@ def config() -> dict:
         return yaml.safe_load(file)
 
 
-@cache
 def userconf() -> dict:
     """
     Read the user configuration file

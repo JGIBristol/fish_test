@@ -8,7 +8,7 @@ model_params:
   in_channels: 1  # Our images are greyscale
   # Things you might want to change
   n_layers: 6
-  n_initial_filters: 16
+  n_initial_filters: 16  # Think this has to be a square number
   kernel_size: 7
   stride: 2
   dropout: 0.015
