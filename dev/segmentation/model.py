@@ -8,6 +8,7 @@ from torchviz import make_dot
 from monai.networks.nets import AttentionUnet
 
 from . import util
+from ..util import userconf
 
 
 def model() -> AttentionUnet:
@@ -40,7 +41,6 @@ def draw_model(model: AttentionUnet, path: str) -> None:
     )
 
 
-
 def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
     """
     Get the right optimiser by reading the user config file
@@ -49,6 +49,7 @@ def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
     :returns: the optimiser
 
     """
-    return getattr(torch.optim, util.userconf()["optimiser"])(
-        model.parameters(), util.userconf()["learning_rate"]
+    user_config = userconf()
+    return getattr(torch.optim, user_config["optimiser"])(
+        model.parameters(), user_config["learning_rate"]
     )
