@@ -3,10 +3,9 @@ General utility functions, etc.
 
 """
 
-from .. import util
-
-
 import math
+
+from .. import util
 
 
 def model_params():

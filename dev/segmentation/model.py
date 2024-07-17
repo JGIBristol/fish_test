@@ -38,3 +38,17 @@ def draw_model(model: AttentionUnet, path: str) -> None:
     make_dot(model(dummy_input), params=dict(model.named_parameters())).render(
         path, format=fmt
     )
+
+
+
+def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
+    """
+    Get the right optimiser by reading the user config file
+
+    :param model: the model to optimise
+    :returns: the optimiser
+
+    """
+    return getattr(torch.optim, util.userconf()["optimiser"])(
+        model.parameters(), util.userconf()["learning_rate"]
+    )
