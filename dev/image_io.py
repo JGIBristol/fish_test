@@ -176,3 +176,20 @@ def random_transforms() -> tio.transforms.Compose:
             ),
         ]
     )
+
+
+def subject(image: np.ndarray, mask: np.ndarray) -> tio.Subject:
+    """
+    Create a TorchIO subject from an image and mask
+
+    :param image: Image to use
+    :param mask: Mask to use
+
+    """
+    if not image.shape == mask.shape:
+        raise ValueError("Image and mask must have the same shape")
+
+    return tio.Subject(
+        image=tio.ScalarImage(tensor=img2pytorch(image)),
+        label=tio.LabelMap(tensor=img2pytorch(mask)),
+    )
