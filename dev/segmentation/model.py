@@ -62,7 +62,7 @@ def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
     )
 
 
-def _pbar(data: torch.utils.DataLoader, notebook: bool) -> type:
+def _pbar(data: torch.utils.data.DataLoader, notebook: bool) -> type:
     """
     Get batches wrapped in the right progress bar type based on whether we're in a notebook or not
 
