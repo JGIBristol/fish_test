@@ -4,7 +4,6 @@ Read, crop, save, etc. images
 """
 
 import re
-import yaml
 import pathlib
 import warnings
 from functools import cache
@@ -13,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 import cv2
 import numpy as np
 import torch
+import torchio as tio
 
 from . import util
 
@@ -139,7 +139,40 @@ def img2pytorch(img: np.ndarray) -> torch.tensor:
     """
     Convert an image to a PyTorch tensor
 
-    Assumes the image has values between 0 and 255
+    """
+    return torch.from_numpy(img).float().unsqueeze(0)
+
+
+def pytorch2img(tensor: torch.Tensor) -> np.ndarray:
+    """
+    Convert a PyTorch tensor to a NumPy array image
+
+    :param tensor: PyTorch tensor of the image.
+    :returns: NumPy array of the image.
+    """
+    return tensor.squeeze().detach().cpu().numpy()
+
+
+def random_transforms() -> tio.transforms.Compose:
+    """
+    The random transforms to apply to the images
 
     """
-    return torch.tensor(img / 255.0, dtype=torch.float32).unsqueeze(0)
+    return tio.Compose(
+        [
+            tio.RandomFlip(axes=(0), flip_probability=0.5),
+            tio.RandomAffine(p=1),
+            tio.RandomBlur(p=0.4),
+            tio.RandomBiasField(0.75, order=4, p=0.5),
+            tio.RandomNoise(1, 0.02, p=0.5),
+            tio.RandomGamma((-0.3, 0.3), p=0.25),
+            tio.ZNormalization(masking_method="label", p=1),
+            tio.OneOf(
+                {
+                    tio.RescaleIntensity(percentiles=(0, 98)): 0.25,
+                    tio.RescaleIntensity(percentiles=(2, 100)): 0.25,
+                    tio.RescaleIntensity(percentiles=(0.5, 99.5)): 0.25,
+                }
+            ),
+        ]
+    )
