@@ -117,7 +117,6 @@ def train_step(
 
 def validation_step(
     model: AttentionUnet,
-    optimiser: torch.optim.Optimizer,
     loss_fn: torch.nn.Module,
     validation_data: torch.utils.data.DataLoader,
     *,
@@ -125,7 +124,15 @@ def validation_step(
     notebook: bool = False,
 ) -> tuple[AttentionUnet, float]:
     """
-    Run the model on one epoch of validation data to check the loss
+    Find the loss on the validation data
+    :param model: the model to train
+    :param loss_fn: the loss function to use
+    :param train_data: the validation data
+    :param device: the device to run the model on
+    :param notebook: whether we're running in a notebook or not (to show a progress bar)
+
+    :returns: the trained model
+    :returns: average validation loss over the epoch
 
     """
     model.eval()
@@ -146,4 +153,4 @@ def validation_step(
         batch.set_description(f"Validation (loss: {loss.item():.4f})")
     batches.close()
 
-    return model, np.mean(losses"""  """)
+    return model, np.mean(losses)

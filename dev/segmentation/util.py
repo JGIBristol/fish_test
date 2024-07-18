@@ -5,6 +5,8 @@ General utility functions, etc.
 
 import math
 
+from torch.utils.data import DataLoader
+
 from .. import util
 
 
