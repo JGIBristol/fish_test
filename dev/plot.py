@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_arr(arr: np.ndarray) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
+def plot_arr(arr: np.ndarray, mask: np.ndarray = None) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
     """
     Plot slices of a 3d array
 
@@ -18,6 +18,8 @@ def plot_arr(arr: np.ndarray) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
     fig, axes = plt.subplots(4, 4, figsize=(12, 12))
     for i, ax in zip(indices, axes.flat):
         ax.imshow(arr[i], cmap="gray", vmin=vmin, vmax=vmax)
+        if mask is not None:
+            ax.imshow(mask[i], cmap="inferno", alpha=0.2)
         ax.axis("off")
         ax.set_title(i)
 
