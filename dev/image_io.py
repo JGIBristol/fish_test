@@ -193,3 +193,18 @@ def subject(image: np.ndarray, mask: np.ndarray) -> tio.Subject:
         image=tio.ScalarImage(tensor=img2pytorch(image)),
         label=tio.LabelMap(tensor=img2pytorch(mask)),
     )
+
+
+def subject_dataset(
+    subjects: list[tio.Subject], transform: tio.transforms.augmentation.RandomTransform
+) -> tio.SubjectsDataset:
+    """
+    Create a TorchIO SubjectsDataset from a list of subjects
+
+    :param subjects: List of subjects
+    :param transform: Transform to apply to the subjects
+
+    :returns: SubjectsDataset
+
+    """
+    return tio.SubjectsDataset(subjects, transform=transform)
