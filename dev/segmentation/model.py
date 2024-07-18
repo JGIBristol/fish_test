@@ -3,10 +3,13 @@ Model for performing segmentation
 
 """
 
+import os
+
+from ray import tune
 import torch
 import numpy as np
 import torch.utils
-from tqdm import tqdm
+from tqdm import tqdm, trange
 from tqdm.notebook import tqdm as tqdm_nb
 from torchviz import make_dot
 from monai.networks.nets import AttentionUnet
@@ -154,3 +157,65 @@ def validation_step(
     batches.close()
 
     return model, np.mean(losses)
+
+
+def train(
+    model: AttentionUnet,
+    optimiser: torch.optim.Optimizer,
+    loss_fn: torch.nn.Module,
+    train_data: torch.utils.data.DataLoader,
+    validation_data: torch.utils.data.DataLoader,
+    *,
+    device: torch.device,
+    epochs: int,
+    lr_scheduler: torch.optim.lr_scheduler.LRScheduler = None,
+    checkpoint: bool = False,
+    notebook: bool = False,
+) -> tuple[AttentionUnet, list[float], list[float]]:
+    """
+    Train the model for the given number of epochs
+
+    :param model: the model to train
+    :param optimiser: the optimiser to use
+    :param loss_fn: the loss function to use
+    :param train_data: the training data
+    :param validation_data: the validation data
+    :param device: the device to run the model on
+    :param epochs: the number of epochs to train for
+    :param lr_scheduler: optional learning rate scheduler to use
+    :param checkpoint: whether to checkpoint the model after each epoch
+    :param notebook: whether we're running in a notebook or not (to show a progress bar)
+
+    :returns: the trained model
+    :returns: list of training losses
+    :returns: list of validation losses
+
+    """
+    train_losses = []
+    validation_losses = []
+
+    for epoch in trange(epochs):
+        model, train_loss = train_step(
+            model, optimiser, loss_fn, train_data, device=device, notebook=notebook
+        )
+        train_losses.append(train_loss)
+
+        model, validation_loss = validation_step(
+            model, loss_fn, validation_data, device=device, notebook=notebook
+        )
+        validation_losses.append(validation_loss)
+
+        # Checkpoint the model
+        if checkpoint:
+            with tune.checkpoint_dir(epoch) as checkpoint_dir:
+                path = os.path.join(checkpoint_dir, "checkpoint")
+                torch.save((model.state_dict(), optimiser.state_dict()), path)
+
+        # We might want to adjust the learning rate during training
+        if lr_scheduler:
+            if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                lr_scheduler.step(validation_losses[-1])
+            else:
+                lr_scheduler.step()
+
+    return model, train_losses, validation_losses
