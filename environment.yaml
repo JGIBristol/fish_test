@@ -5,5 +5,7 @@ dependencies:
   - black
   - pip
   - pip:
-    - git+https://github.com/wahabk/ctfishpy
+    - git+https://github.com/wahabk/ctfishpy  # This is most packages
+    - torchviz
+    - ray[tune]
     - torchviz
