@@ -8,6 +8,7 @@ import os
 from ray import tune
 import torch
 import numpy as np
+import torchio as tio
 import torch.utils
 from tqdm import tqdm, trange
 from tqdm.notebook import tqdm as tqdm_nb
@@ -100,7 +101,11 @@ def train_step(
 
     train_losses = np.ones(len(batches)) * np.nan
     for i, batch in batches:
-        x, y = batch
+        # Each batch contains an image, a label and a location (which we don't care about)
+        # We also just want to use the data (tio.DATA) from each of these
+        x = batch["image"][tio.DATA]
+        y = batch["label"][tio.DATA]
+
         input_, target = x.to(device), y.to(device)
 
         optimiser.zero_grad()
@@ -145,7 +150,9 @@ def validation_step(
     losses = np.ones(len(validation_data)) * np.nan
 
     for i, batch in enumerate(batches):
-        x, y = batch
+        # TODO fix this it'll be broken
+        raise NotImplementedError
+        x, y, _ = batch
         input_, target = x.to(device), y.to(device)
 
         with torch.no_grad():
