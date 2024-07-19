@@ -4,6 +4,7 @@ dependencies:
   - python-graphviz
   - black
   - pip
+  - ipywidgets
   - pip:
     - git+https://github.com/wahabk/ctfishpy  # This is most packages
     - torchviz
