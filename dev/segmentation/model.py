@@ -157,14 +157,13 @@ def validation_step(
     """
     model.eval()
 
-    batches = _pbar(validation_data, notebook)
+    batch = _pbar(validation_data, notebook)
 
     losses = np.ones(len(validation_data)) * np.nan
 
-    for i, batch in enumerate(batches):
-        # TODO fix this it'll be broken
-        raise NotImplementedError
-        x, y, _ = batch
+    for i, data in batch:
+        x, y = _get_data(data)
+
         input_, target = x.to(device), y.to(device)
 
         with torch.no_grad():
@@ -173,7 +172,7 @@ def validation_step(
             losses[i] = loss.item()
 
         batch.set_description(f"Validation (loss: {loss.item():.4f})")
-    batches.close()
+    batch.close()
 
     return model, np.mean(losses)
 
