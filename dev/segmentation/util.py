@@ -27,7 +27,7 @@ def model_params():
 
     # Convolution stride is always the same, apart from in the first layer where it's implicitly 1
     # (to preserve the size of the input)
-    strides = [params["stride"]] * (params["n_layers"] + 1)
+    strides = [params["stride"]] * (params["n_layers"] - 1)
     params["strides"] = strides
 
     # Rename some of the parameters to be consistent with the monai API
