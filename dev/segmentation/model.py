@@ -63,13 +63,28 @@ def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
     )
 
 
-def _pbar(data: torch.utils.data.DataLoader, notebook: bool) -> torch.utils.data.DataLoader:
+def _pbar(
+    data: torch.utils.data.DataLoader, notebook: bool
+) -> torch.utils.data.DataLoader:
     """
     Get batches wrapped in the right progress bar type based on whether we're in a notebook or not
 
     """
     progress_bar = tqdm_nb if notebook else tqdm
     return progress_bar(enumerate(data), "Training", total=len(data), leave=False)
+
+
+def _get_data(data: dict) -> tuple[torch.Tensor, torch.Tensor]:
+    """
+    Get the image and labels from each entry in a batch
+
+    """
+    # Each batch contains an image, a label and a location (which we don't care about)
+    # We also just want to use the data (tio.DATA) from each of these
+    x = data["image"][tio.DATA]
+    y = data["label"][tio.DATA]
+
+    return x, y
 
 
 def train_step(
@@ -97,14 +112,12 @@ def train_step(
     """
     model.train()
 
-    batches = _pbar(train_data, notebook)
+    batch = _pbar(train_data, notebook)
 
-    train_losses = np.ones(len(batches)) * np.nan
-    for i, batch in batches:
-        # Each batch contains an image, a label and a location (which we don't care about)
-        # We also just want to use the data (tio.DATA) from each of these
-        x = batch["image"][tio.DATA]
-        y = batch["label"][tio.DATA]
+    train_losses = np.ones(len(batch)) * np.nan
+    for i, data in batch:
+        print(data.keys())
+        x, y = _get_data(data)
 
         input_, target = x.to(device), y.to(device)
 
@@ -117,8 +130,8 @@ def train_step(
         loss.backward()
         optimiser.step()
 
-        batches.set_description(f"Training (loss: {loss.item():.4f})")
-    batches.close()
+        batch.set_description(f"Training (loss: {loss.item():.4f})")
+    batch.close()
 
     return model, np.mean(train_losses)
 
