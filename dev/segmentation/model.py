@@ -116,7 +116,6 @@ def train_step(
 
     train_losses = np.ones(len(batch)) * np.nan
     for i, data in batch:
-        print(data.keys())
         x, y = _get_data(data)
 
         input_, target = x.to(device), y.to(device)
