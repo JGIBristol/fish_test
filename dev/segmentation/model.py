@@ -225,9 +225,10 @@ def train(
 
         # Checkpoint the model
         if checkpoint:
-            with tune.checkpoint_dir(epoch) as checkpoint_dir:
-                path = os.path.join(checkpoint_dir, "checkpoint")
-                torch.save((model.state_dict(), optimiser.state_dict()), path)
+            raise NotImplementedError
+        #     with tune.checkpoint_dir(epoch) as checkpoint_dir:
+        #         path = os.path.join(checkpoint_dir, "checkpoint")
+        #         torch.save((model.state_dict(), optimiser.state_dict()), path)
 
         # We might want to adjust the learning rate during training
         if lr_scheduler:
