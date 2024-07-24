@@ -3,6 +3,7 @@ Plotting helpers
 
 """
 
+import numbers
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -34,11 +35,19 @@ def plot_arr(
     indices = np.floor(np.arange(0, arr.shape[0], arr.shape[0] // 16)).astype(int)
     vmin, vmax = np.min(arr), np.max(arr)
 
+    # If mask only has a few unique values, we want to use a nice qualitative colormap
+    # Otherwise just use a sequantial one
+    mask_cmap = (
+        _class_cmap(len(np.unique(mask)))
+        if mask is not None and len(np.unique(mask)) < 10
+        else "hot_r"
+    )
+
     fig, axes = plt.subplots(4, 4, figsize=(12, 12))
     for i, ax in zip(indices, axes.flat):
         ax.imshow(arr[i], cmap="gray", vmin=vmin, vmax=vmax)
         if mask is not None:
-            ax.imshow(mask[i], cmap=_class_cmap(len(np.unique(mask))))
+            ax.imshow(mask[i], cmap=mask_cmap, alpha=0.8)
         ax.axis("off")
         ax.set_title(i)
 
