@@ -1,10 +1,11 @@
-name: fish
+name: fish2
 dependencies:
   - python=3.12
   - python-graphviz
   - black
   - pip
   - ipywidgets
+  - numpy=1.26.4
   - pip:
     - git+https://github.com/wahabk/ctfishpy  # This is most packages
     - torchviz

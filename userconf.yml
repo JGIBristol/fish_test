@@ -16,5 +16,5 @@ model_params:
 # Other model parameters that aren't needed by the constructor
 learning_rate: 0.000015 # 0.0026
 optimiser: "Adam"  # Must be one of the torch.optim optimisers
-patch_size: 32,32,32  # Comma-separated; (16,16,16) causes issues (not sure why)
+patch_size: 64,64,64  # Comma-separated
 batch_size: 32
