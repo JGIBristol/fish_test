@@ -140,7 +140,7 @@ def img2pytorch(img: np.ndarray) -> torch.tensor:
     Convert an image to a PyTorch tensor
 
     """
-    return torch.from_numpy(img).float().unsqueeze(0)
+    return torch.as_tensor(img).float().unsqueeze(0)
 
 
 def pytorch2img(tensor: torch.Tensor) -> np.ndarray:
