@@ -210,3 +210,24 @@ def subject_dataset(
 
     """
     return tio.SubjectsDataset(subjects, transform=transform)
+
+
+def crop(
+    image: np.ndarray, roi_size: tuple[int, int, int], roi_centre: tuple[int, int, int]
+) -> np.ndarray:
+    """
+    Crop an image around a given centre
+
+    :param image: Image to crop
+    :param roi_size: Size of the ROI, (z, x, y)
+    :param roi_centre: Centre of the ROI, (z, x, y)
+
+    :returns: Cropped image, as a slice
+
+    """
+    d, w, h = roi_size
+    z, y, x = roi_centre
+
+    return image[
+        z - d // 2 : z + d // 2, x - h // 2 : x + h // 2, y - w // 2 : y + w // 2
+    ]
