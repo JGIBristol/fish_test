@@ -135,12 +135,12 @@ def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
         return _read_tiffstack_multithread(img_paths, n_jobs)
 
 
-def img2pytorch(img: np.ndarray) -> torch.tensor:
+def img2pytorch(img: np.ndarray, *, dtype: torch.dtype) -> torch.tensor:
     """
     Convert an image to a PyTorch tensor
 
     """
-    return torch.as_tensor(img).float().unsqueeze(0)
+    return torch.as_tensor(img, dtype=dtype).unsqueeze(0)
 
 
 def pytorch2img(tensor: torch.Tensor) -> np.ndarray:
@@ -192,8 +192,8 @@ def subject(image: np.ndarray, mask: np.ndarray) -> tio.Subject:
         raise ValueError("Image and mask must have the same shape")
 
     return tio.Subject(
-        image=tio.ScalarImage(tensor=img2pytorch(image)),
-        label=tio.LabelMap(tensor=img2pytorch(mask)),
+        image=tio.ScalarImage(tensor=img2pytorch(image, dtype=torch.float32)),
+        label=tio.LabelMap(tensor=img2pytorch(mask, dtype=torch.uint8)),
     )
 
 
