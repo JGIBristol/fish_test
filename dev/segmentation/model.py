@@ -97,7 +97,7 @@ def train_step(
     *,
     device: torch.device,
     notebook: bool = False,
-) -> tuple[AttentionUnet, float]:
+) -> tuple[AttentionUnet, list[float]]:
     """
     Train the model for one epoch, on the given batches of data provided as a dataloader
 
@@ -107,9 +107,10 @@ def train_step(
     :param train_data: the training data
     :param device: the device to run the model on
     :param notebook: whether we're running in a notebook or not (to show a progress bar)
+    :param return_batch_losses: whether to return the losses for each batch
 
     :returns: the trained model
-    :returns: average training loss over the epoch
+    :returns: list of training batch losses
 
     """
     model.train()
@@ -134,7 +135,7 @@ def train_step(
         batch.set_description(f"Training (loss: {loss.item():.4f})")
     batch.close()
 
-    return model, np.mean(train_losses)
+    return model, train_losses
 
 
 def validation_step(
@@ -144,9 +145,10 @@ def validation_step(
     *,
     device: torch.device,
     notebook: bool = False,
-) -> tuple[AttentionUnet, float]:
+) -> tuple[AttentionUnet, list[float]]:
     """
     Find the loss on the validation data
+
     :param model: the model to train
     :param loss_fn: the loss function to use
     :param train_data: the validation data
@@ -154,7 +156,7 @@ def validation_step(
     :param notebook: whether we're running in a notebook or not (to show a progress bar)
 
     :returns: the trained model
-    :returns: average validation loss over the epoch
+    :returns: validation loss for each batch
 
     """
     model.eval()
@@ -176,7 +178,7 @@ def validation_step(
         batch.set_description(f"Validation (loss: {loss.item():.4f})")
     batch.close()
 
-    return model, np.mean(losses)
+    return model, losses
 
 
 def train(
@@ -191,7 +193,7 @@ def train(
     lr_scheduler: torch.optim.lr_scheduler.LRScheduler = None,
     checkpoint: bool = False,
     notebook: bool = False,
-) -> tuple[AttentionUnet, list[float], list[float]]:
+) -> tuple[AttentionUnet, list[list[float], list[list[float]]]]:
     """
     Train the model for the given number of epochs
 
@@ -207,23 +209,25 @@ def train(
     :param notebook: whether we're running in a notebook or not (to show a progress bar)
 
     :returns: the trained model
-    :returns: list of training losses
-    :returns: list of validation losses
+    :returns: list of training batch losses
+    :returns: list of validation batch losses
 
     """
-    train_losses = []
-    validation_losses = []
+    train_batch_losses = []
+    val_batch_losses = []
 
     for epoch in trange(epochs):
-        model, train_loss = train_step(
+        model, train_batch_loss = train_step(
             model, optimiser, loss_fn, train_data, device=device, notebook=notebook
         )
-        train_losses.append(train_loss)
+        train_batch_losses.append(train_batch_loss)
+        train_batch_losses.append(train_batch_loss)
 
-        model, validation_loss = validation_step(
+        model, val_batch_loss = validation_step(
             model, loss_fn, validation_data, device=device, notebook=notebook
         )
-        validation_losses.append(validation_loss)
+        val_batch_losses.append(val_batch_loss)
+        val_batch_losses.append(val_batch_loss)
 
         # Checkpoint the model
         if checkpoint:
@@ -235,8 +239,8 @@ def train(
         # We might want to adjust the learning rate during training
         if lr_scheduler:
             if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                lr_scheduler.step(validation_losses[-1])
+                lr_scheduler.step(val_batch_losses[-1])
             else:
                 lr_scheduler.step()
 
-    return model, train_losses, validation_losses
+    return model, train_batch_losses, val_batch_losses

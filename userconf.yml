@@ -11,10 +11,10 @@ model_params:
   n_initial_filters: 16  # Think this has to be a square number
   kernel_size: 7
   stride: 2
-  dropout: 0.015
+  dropout: 0.00 # 0.015
 
 # Other model parameters that aren't needed by the constructor
-learning_rate: 0.0000015
+learning_rate: 0.01
 optimiser: "Adam"  # Must be one of the torch.optim optimisers
-patch_size: 96,96,96  # Comma-separated
-batch_size: 2
+patch_size: 64,64,64  # Comma-separated
+batch_size: 4
