@@ -161,7 +161,11 @@ def random_transforms() -> tio.transforms.Compose:
     return tio.Compose(
         [
             tio.RandomFlip(axes=(0), flip_probability=0.5),
-            tio.RandomAffine(p=1),
+            tio.RandomAffine(
+                p=1,
+                degrees=30,
+                scales=0.5
+            ),
             tio.RandomBlur(p=0.4),
             # Removed this one as I'm not sure its relevant
             # tio.RandomBiasField(0.75, order=4, p=0.5),

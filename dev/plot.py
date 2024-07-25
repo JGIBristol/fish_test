@@ -47,7 +47,7 @@ def plot_arr(
     for i, ax in zip(indices, axes.flat):
         ax.imshow(arr[i], cmap="gray", vmin=vmin, vmax=vmax)
         if mask is not None:
-            ax.imshow(mask[i], cmap=mask_cmap, alpha=0.8)
+            ax.imshow(mask[i], cmap=mask_cmap, alpha=0.5)
         ax.axis("off")
         ax.set_title(i)
 

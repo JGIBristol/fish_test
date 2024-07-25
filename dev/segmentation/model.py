@@ -64,14 +64,16 @@ def optimiser(model: AttentionUnet) -> torch.optim.Optimizer:
 
 
 def _pbar(
-    data: torch.utils.data.DataLoader, notebook: bool
+    data: torch.utils.data.DataLoader, mode: str, notebook: bool
 ) -> torch.utils.data.DataLoader:
     """
     Get batches wrapped in the right progress bar type based on whether we're in a notebook or not
 
     """
+    assert mode in {"Training", "Validation"}
+
     progress_bar = tqdm_nb if notebook else tqdm
-    return progress_bar(enumerate(data), "Training", total=len(data), leave=False)
+    return progress_bar(enumerate(data), mode, total=len(data), leave=False)
 
 
 def _get_data(data: dict) -> tuple[torch.Tensor, torch.Tensor]:
@@ -112,7 +114,7 @@ def train_step(
     """
     model.train()
 
-    batch = _pbar(train_data, notebook)
+    batch = _pbar(train_data, "Training", notebook)
 
     train_losses = np.ones(len(batch)) * np.nan
     for i, data in batch:
@@ -157,7 +159,7 @@ def validation_step(
     """
     model.eval()
 
-    batch = _pbar(validation_data, notebook)
+    batch = _pbar(validation_data, "Validation", notebook)
 
     losses = np.ones(len(validation_data)) * np.nan
 
