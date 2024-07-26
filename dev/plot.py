@@ -3,10 +3,11 @@ Plotting helpers
 
 """
 
-import numbers
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from monai.networks.nets import AttentionUnet
 
 
 def _class_cmap(n_classes: int) -> plt.cm.ScalarMappable:
@@ -54,3 +55,30 @@ def plot_arr(
     fig.tight_layout()
 
     return fig, axes
+
+
+def plot_nth_filter(
+    model: AttentionUnet, n: int
+) -> tuple[plt.Figure, np.ndarray[plt.Axes]]:
+    """
+    Plot the nth filter of the first convolutional layer of a model
+
+    """
+    activations = []
+
+    def activation_hook(module, in_tensor, out_tensor):
+        activations.append(out_tensor)
+
+    first_layer = model.model[0]
+    first_layer.register_forward_hook(activation_hook)
+
+    # Maybe the tensor size here should match the patch size
+    input_tensor = torch.rand(1, 1, 128, 128, 128).to(next(model.parameters()).device)
+
+    with torch.no_grad():
+        model.eval()
+        model(input_tensor)
+
+    first_layer_activations = activations[0].squeeze()
+
+    return plot_arr(first_layer_activations[n].cpu().numpy() * 255)
