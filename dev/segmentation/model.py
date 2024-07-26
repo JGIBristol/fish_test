@@ -239,7 +239,7 @@ def train(
         # We might want to adjust the learning rate during training
         if lr_scheduler:
             if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
-                lr_scheduler.step(val_batch_losses[-1])
+                lr_scheduler.step(np.mean(val_batch_losses[-1]))
             else:
                 lr_scheduler.step()
 

@@ -160,18 +160,18 @@ def random_transforms() -> tio.transforms.Compose:
     """
     return tio.Compose(
         [
-            tio.RandomFlip(axes=(0), flip_probability=0.5),
-            tio.RandomAffine(
-                p=1,
-                degrees=30,
-                scales=0.5
-            ),
-            tio.RandomBlur(p=0.4),
-            # Removed this one as I'm not sure its relevant
-            # tio.RandomBiasField(0.75, order=4, p=0.5),
-            tio.RandomNoise(1, 0.02, p=0.5),
-            tio.RandomGamma((-0.3, 0.3), p=0.25),
-            tio.ZNormalization(masking_method="label", p=1),
+            # tio.RandomFlip(axes=(0), flip_probability=0.5),
+            # tio.RandomAffine(
+            #     p=1,
+            #     degrees=30,
+            #     scales=0.5
+            # ),
+            # tio.RandomBlur(p=0.4),
+            # # Removed this one as I'm not sure its relevant
+            # # tio.RandomBiasField(0.75, order=4, p=0.5),
+            # tio.RandomNoise(1, 0.02, p=0.5),
+            # tio.RandomGamma((-0.3, 0.3), p=0.25),
+            # tio.ZNormalization(masking_method="label", p=1),
             # Removed this as it really messes the image up sometimes
             # tio.OneOf(
             #     {
