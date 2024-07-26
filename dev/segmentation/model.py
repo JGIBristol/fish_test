@@ -221,12 +221,10 @@ def train(
             model, optimiser, loss_fn, train_data, device=device, notebook=notebook
         )
         train_batch_losses.append(train_batch_loss)
-        train_batch_losses.append(train_batch_loss)
 
         model, val_batch_loss = validation_step(
             model, loss_fn, validation_data, device=device, notebook=notebook
         )
-        val_batch_losses.append(val_batch_loss)
         val_batch_losses.append(val_batch_loss)
 
         # Checkpoint the model
