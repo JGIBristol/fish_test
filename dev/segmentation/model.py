@@ -113,6 +113,18 @@ def train_step(
     :returns: list of training batch losses
 
     """
+    # If the gradient is too large, we might want to clip it
+    # Setting this to some reasonable value might help
+    # (find with this, put after loss.backward():)
+    # total_norm = 0
+    # for p in model.parameters():
+    #    if p.grad is not None:
+    #        param_norm = p.grad.data.norm(2)
+    #        total_norm += param_norm.item() ** 2
+    # if total_norm ** 0.5 > max_grad:
+    #     print(total_norm ** 0.5)
+    max_grad = np.inf
+
     model.train()
 
     batch = _pbar(train_data, "Training", notebook)
@@ -130,6 +142,7 @@ def train_step(
         train_losses[i] = loss.item()
 
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad)
         optimiser.step()
 
         batch.set_description(f"Training (loss: {loss.item():.4f})")
