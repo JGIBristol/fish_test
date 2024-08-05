@@ -5,6 +5,7 @@ i.e. read in a stack of 2d tiffs, and save it as a 3d tiff
 
 """
 
+import os
 import pathlib
 import multiprocessing
 from typing import Iterable
@@ -62,7 +63,12 @@ def _write_tif(stack: np.ndarray, n: str) -> None:
     Write the 3d array to a tiff
 
     """
-    tifffile.imwrite(str(_out_path(n)), stack)
+    try:
+        tifffile.imwrite(str(_out_path(n)), stack)
+    except KeyboardInterrupt:
+        print(f"Caught KeyboardInterrupt, exiting and deleting {_out_path(n)}")
+        os.remove(_out_path(n))
+
     print("Wrote ", n)
 
 

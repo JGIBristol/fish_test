@@ -605,6 +605,9 @@ def main():
         print(f"Saving filter to {path}")
         plt.savefig(path)
 
+    # Save as a tiff
+    tifffile.imsave("tmp_pred.tif", prediction.astype(np.uint8) * 255)
+
 
 if __name__ == "__main__":
     main()
