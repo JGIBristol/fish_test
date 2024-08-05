@@ -129,8 +129,8 @@ def train_step(
 
     batch = _pbar(train_data, "Training", notebook)
 
-    train_losses = np.ones(len(batch)) * np.nan
-    for i, data in batch:
+    train_losses = []
+    for _, data in batch:
         x, y = _get_data(data)
 
         input_, target = x.to(device), y.to(device)
@@ -139,7 +139,7 @@ def train_step(
         out = model(input_)
 
         loss = loss_fn(out, target)
-        train_losses[i] = loss.item()
+        train_losses.append(loss.item())
 
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad)

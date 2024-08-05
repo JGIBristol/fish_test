@@ -1,5 +1,5 @@
 # User defined config, depends on where your files are etc.
-rdsf_dir: '/home/mh19137/zebrafish_rdsf/smb-share:server=rdsfcifs.acrc.bris.ac.uk,share=zebrafish_osteoarthritis/'
+rdsf_dir: '/home/mh19137/zebrafish_rdsf/' #smb-share:server=rdsfcifs.acrc.bris.ac.uk,share=zebrafish_osteoarthritis/'
 
 model_params:
   # Things you probably won't need to change - I just kept them here to keep all the params in one place
