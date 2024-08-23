@@ -15,7 +15,7 @@ def _class_cmap(n_classes: int) -> plt.cm.ScalarMappable:
     Colormap for a given number of classes, where the first color is transparent
 
     """
-    viridis = plt.cm.get_cmap("viridis", n_classes)
+    viridis = plt.get_cmap("viridis", n_classes)
     colors = viridis(np.linspace(0, 1, n_classes))
     colors[0] = (1, 1, 1, 0)
 
