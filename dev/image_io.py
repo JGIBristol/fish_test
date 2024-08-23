@@ -128,6 +128,8 @@ def read_tiffstack(n: int, *, n_jobs: int = None) -> np.ndarray:
 
     """
     img_paths = sorted(img_dir(n).glob("*.tiff"))
+    if img_paths == []:
+        raise ValueError(f"No images found in {img_dir(n)}")
 
     if n_jobs is None:
         return _read_tiffstack_singlethread(img_paths)
