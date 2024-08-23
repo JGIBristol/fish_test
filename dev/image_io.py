@@ -195,9 +195,12 @@ def subject(image: np.ndarray, mask: np.ndarray) -> tio.Subject:
     if not image.shape == mask.shape:
         raise ValueError("Image and mask must have the same shape")
 
+    image_tensor = img2pytorch(image, dtype=torch.float32)
+    mask_tensor = img2pytorch(mask, dtype=torch.uint8)
+
     return tio.Subject(
-        image=tio.ScalarImage(tensor=img2pytorch(image, dtype=torch.float32)),
-        label=tio.LabelMap(tensor=img2pytorch(mask, dtype=torch.uint8)),
+        image=tio.Image(tensor=image_tensor, type=tio.INTENSITY),
+        label=tio.Image(tensor=mask_tensor, type=tio.LABEL),
     )
 
 
